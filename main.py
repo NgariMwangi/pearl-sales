@@ -47,6 +47,7 @@ def product():
         buying_price = request.form["buying_price"]
         selling_price = request.form["selling"]
         stock_quantity = request.form["stock"]
+        print(buying_price)
         cur.execute("""INSERT INTO product1(name,buying_price,selling_price,stock_quantity) VALUES ( %(n)s,%(bp)s,%(sp)s,%(st)s)""", {
                     "n": product_name, "bp": buying_price, "sp": selling_price, "st": stock_quantity, })
         conn.commit()
