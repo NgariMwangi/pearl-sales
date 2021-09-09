@@ -1,16 +1,55 @@
 import psycopg2
 from flask import Flask, request, render_template, Request, redirect, url_for, flash
+from datetime import date
 app = Flask(__name__)
 # app.config["SECRET_KEY"] = "#deno0707@mwangi"
 app.config["SECRET_KEY"] = "36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8"
 
-#conn = psycopg2.connect(user="postgres", password="deno0707",host="127.0.0.1", port="5432", database="myduka")
-conn = psycopg2.connect(dbname="d66n9lkjhpv4d", host="ec2-54-155-61-133.eu-west-1.compute.amazonaws.com", user="skfkvatvfaigmx", port=5432,  password="36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8")
+# conn = psycopg2.connect(user="postgres", password="deno0707",host="127.0.0.1", port="5432", database="myduka")
+conn = psycopg2.connect(database="d66n9lkjhpv4d", host="ec2-54-155-61-133.eu-west-1.compute.amazonaws.com", user="skfkvatvfaigmx", port=5432, password="36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8")
 cur = conn.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS product1 (id serial PRIMARY KEY,name VARCHAR(100),buying_price INT,selling_price INT,stock_quantity INT);")
 cur.execute("CREATE TABLE IF NOT EXISTS sale (id serial PRIMARY KEY,pid INT, quantity INT, created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() );")
 conn.commit()
-
+@app.route('/dashboard')
+def dash():
+    cur=conn.cursor()
+    cur.execute("select count(id) from product1")
+    pro=cur.fetchall()
+    y=pro[0]
+    pro=y[0]
+    cur.execute("select count(id) from sale")
+    sales=cur.fetchall()
+    x=sales[0]
+    sales=x[0]
+    cur = conn.cursor()
+    cur.execute("""select sum((product1.selling_price-product1.buying_price)*sale.quantity) as profit, product1.name from sale 
+        join product1 on product1.id=sale.pid
+        GROUP BY product1.name""")
+    graph=cur.fetchall()
+    
+    v=[]
+    y=[]
+    for i in graph:
+        v.append(i[1])
+        y.append(i[0])
+        
+    cur.execute(""" select to_char("created_at", 'mm-dd-yyyy'),sum((product1.selling_price-product1.buying_price)*sale.quantity) as profit
+from sale join product1 on product1.id=sale.pid
+        GROUP BY sale.created_at""")
+    line=cur.fetchall()
+    # print(line)
+    dat=[]
+    profit=[]
+    for u in line:
+        dat.append(u[0])
+        profit.append(u[1])
+    print(len(dat))
+    print(len(profit))
+    
+    
+    return render_template("dashboard.html", pro=pro,sales=sales,y=y,v=v,graph=graph,dat=dat,profit=profit)
+    
 
 @app.route('/')
 def hello_world():

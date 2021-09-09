@@ -59,7 +59,7 @@
   
             <li class="nav-item">
   
-              <a class="nav-link active white" aria-current="page" href="/landing">Dashboard</a>
+              <a class="nav-link active white" aria-current="page" href="/dashboard">Dashboard</a>
             </li>
             <li class="nav-item">
               <a class="nav-link active white" href="/sales">Sales</a>
@@ -81,6 +81,11 @@
     <div class="row mt-3">
       <div class="col">
         <canvas id="bar-chart" width="450" height="200"></canvas>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        <canvas id="line-chart" width="450" height="200"></canvas>
       </div>
     </div>
   
@@ -131,6 +136,21 @@
             beginAtZero: true
           }
         }
+      },
+    });
+  </script>
+  <script>
+    new Chart(document.getElementById("line-chart"),{
+      type:'line-chart',
+      data:{
+        labels: [mon,tue,wen],
+  datasets: [{
+    label: 'My First Dataset',
+    data: [80,90,100],
+    fill: false,
+    borderColor: 'rgb(75, 192, 192)',
+    tension: 0.1
+  }]
       },
     });
   </script>

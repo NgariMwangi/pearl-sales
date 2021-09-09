@@ -37,3 +37,9 @@
       font-size: 60px;
       margin-left: 2rem;
   }
+  .card-body {
+    background-color: red;
+    color: white;}
+    .card-body > h5 {
+      border-bottom: 1px solid white;
+  }
