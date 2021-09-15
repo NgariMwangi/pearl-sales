@@ -57,28 +57,39 @@ def sign():
     if request.method=="POST":
         cur=conn.cursor()
         g=request.form["email"]
+        print(g)
         p=request.form["password"]
         o=request.form["password2"]
         i=request.form["username"]
-        if g !=g:
-            
-            if p==o:
+        cur.execute('select email from users')
+        k=cur.fetchall()
+        q=[]
+        for yt in k:
+            q.append(yt[0])
 
-                cur.execute("""INSERT INTO users(username,email,password,password2) VALUES ( %(i)s,%(g)s,%(p)s,%(o)s)""", {
-                            "i":i, "g": g, "p":p, "o": o, })
+        g!=q
+        print(k)
+        print(q)
+        print(g)
+        print(type(g))
+        if p==o:
+                for ts in q:
+                    if g !=ts:
+                        cur.execute("""INSERT INTO users(username,email,password,password2) VALUES ( %(i)s,%(g)s,%(p)s,%(o)s)""", {
+                            "i":i, "g": g, "p":p, "o": o, })              
+                        return redirect("/products")
                 
-                return redirect("/products")
-                
-            else:
-                flash('password can not be confirmed')
-                return redirect("/signup")
+                    else:
+                        flash('email already exist')
+                    return redirect("/signup")
                 
                
         else:
-             flash('email already exist')
-             return redirect("/signup")
+            flash('password can not be confirmed')          
+            return redirect("/signup")
 
-    
+    else:
+        return render_template("signup.html")
 
 @app.route('/login', methods=["POST", "GET"])
 def log():
