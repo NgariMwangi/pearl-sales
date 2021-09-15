@@ -1,45 +1,60 @@
 .carousel-item {
-    height: 100vh;
-    min-height: 350px;
-    background: no-repeat center center scroll;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-  }
-  section {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-  }a
-  
-  .lnr {
-    display: inline-block;
-    fill: currentColor;
-    width: 1em;
-    height: 1em;
-    vertical-align: -0.05em;
-    stroke-width: 1;
-  }
-  
-  .services-icon {
-    margin-bottom: 20px;
-    font-size: 30px;
-  }
-  bgc2, .vLine, .hLine {
-      background-color: #0F52BA;
-  }
-  
-  .quote-icon {
-    font-size: 40px;
-    margin-bottom: 20px;
-  }
-  .services-icon {
-      font-size: 60px;
-      margin-left: 2rem;
-  }
-  .card-body {
-    background-color: red;
-    color: white;}
-    .card-body > h5 {
-      border-bottom: 1px solid white;
-  }
+  height: 100vh;
+  min-height: 350px;
+  background: no-repeat center center scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+section {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+a .lnr {
+  display: inline-block;
+  fill: currentColor;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.05em;
+  stroke-width: 1;
+}
+
+.services-icon {
+  margin-bottom: 20px;
+  font-size: 30px;
+}
+bgc2,
+.vLine,
+.hLine {
+  background-color: #0f52ba;
+}
+
+.quote-icon {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+.services-icon {
+  font-size: 60px;
+  margin-left: 2rem;
+}
+.card-body {
+  background-color: red;
+  color: white;
+}
+.card-body > h5 {
+  border-bottom: 1px solid white;
+}
+body {
+  background-color: #eee;
+}
+.container-fluid {
+  padding: 50px;
+}
+.container {
+  background-color: white;
+  padding: 50px;
+}
+#title {
+  font-family: "Lobster", cursive;
+}

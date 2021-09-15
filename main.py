@@ -1,16 +1,108 @@
+from kra import Payroll
 import psycopg2
 from flask import Flask, request, render_template, Request, redirect, url_for, flash
 from datetime import date
+import json, ast
+ 
 app = Flask(__name__)
-# app.config["SECRET_KEY"] = "#deno0707@mwangi"
-app.config["SECRET_KEY"] = "36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8"
-
-# conn = psycopg2.connect(user="postgres", password="deno0707",host="127.0.0.1", port="5432", database="myduka")
-conn = psycopg2.connect(database="d66n9lkjhpv4d2", host="ec2-54-155-61-133.eu-west-1.compute.amazonaws.com", user="skfkvatvfaigmx", port=5432, password="36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8")
+app.config["SECRET_KEY"] = "#deno0707@mwangi"
+#app.config["SECRET_KEY"] = "36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8"
+conn = psycopg2.connect(user="postgres", password="deno0707",host="127.0.0.1", port="5432", database="myduka")
+#conn = psycopg2.connect(database="d66n9lkjhpv4d2", host="ec2-54-155-61-133.eu-west-1.compute.amazonaws.com", user="skfkvatvfaigmx", port=5432, password="36d44b1536a758b6cfb4ab06430c574cecf024ad288c0bf0de2cb3a5f1cc63e8")
 cur = conn.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS product1 (id serial PRIMARY KEY,name VARCHAR(100),buying_price INT,selling_price INT,stock_quantity INT);")
 cur.execute("CREATE TABLE IF NOT EXISTS sale (id serial PRIMARY KEY,pid INT, quantity INT, created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() );")
+cur.execute("CREATE TABLE IF NOT EXISTS users(id serial PRIMARY KEY,username VARCHAR(100), email VARCHAR(100),password VARCHAR(100),password2 VARCHAR(100) );")
 conn.commit()
+
+@app.route('/kra',methods=["POST","GET"])
+def netpay():
+    z=[]
+    if request.method=="POST":
+        q=request.form["name"]
+        p=request.form["basic"]
+        o=request.form["benefits"]
+        p=(int(p))
+        o=(int(o))
+        x=Payroll(p,o)
+        data = {"nm":q,"gs":x.gross_salary,"ns":x.nssf_var,"tx":x.taxable_pay,"py":x.paye,"nh":x.nhif,"dd":x.deductions,"nt":x.net_salary}
+
+        # print("x before re", data)
+        return redirect(url_for('netpay', x=data) )
+        
+    else:
+        
+        try:  
+            x= request.args['x']          
+            print("x after re55",x)
+            print(type(x))
+            print("h")
+            # d = json.loads(x)
+            d = ast.literal_eval(x)
+            print("here")
+            print(d)
+            print(type(d))
+            return render_template("kra.html",d=d)
+        except:
+            if request.method=="GET":
+                d={}            
+                return render_template("kra.html",d=d)
+            else:
+                return render_template("kra.html",d=d)
+        
+       
+
+@app.route('/signup',methods=["POST","GET"])
+def sign():
+    if request.method=="POST":
+        cur=conn.cursor()
+        g=request.form["email"]
+        p=request.form["password"]
+        o=request.form["password2"]
+        i=request.form["username"]
+        if 0 ==p:
+            cur.execute("""INSERT INTO users(username,email,password,password2) VALUES ( %(i)s,%(g)s,%(p)s,%(o)s)""", {
+                        "i":i, "g": g, "p":p, "o": o, })
+            conn.commit()
+            return redirect("/products")
+        else:
+             flash('password can not be confirmed')
+             return redirect("/signup")
+
+    else:
+        return render_template("signup.html")
+
+@app.route('/login', methods=["POST", "GET"])
+def log():
+    if request.method=="POST":
+        cur=conn.cursor()
+        h=request.form["email"]
+        j=request.form["password"]
+        cur.execute("select count(id) from users where email= %(h)s and password=%(j)s", {"h":h,"j":j})
+        pro=cur.fetchall()
+        for i in pro:
+            if i[0]==1:
+                return redirect("/products")
+            else:
+                flash('incorrect details')
+                return redirect("/login")
+
+    
+       
+        
+        # for b in f:
+        #     if b[2]==h:
+        #         if b[3]==j:
+        #             return redirect("/products")
+        #         else:
+        #             flash('incorrect password')
+        #     else:
+        #         flash('invalid Email')
+    else:
+        return render_template("signup.html")
+    
+
+
 @app.route('/dashboard')
 def dash():
     cur=conn.cursor()
@@ -86,6 +178,7 @@ def product():
         buying_price = request.form["buying_price"]
         selling_price = request.form["selling"]
         stock_quantity = request.form["stock"]
+        print(product_name)
         print(buying_price)
         cur.execute("""INSERT INTO product1(name,buying_price,selling_price,stock_quantity) VALUES ( %(n)s,%(bp)s,%(sp)s,%(st)s)""", {
                     "n": product_name, "bp": buying_price, "sp": selling_price, "st": stock_quantity, })
@@ -116,6 +209,7 @@ def sale():
         pid = request.form["Item-id"]
         sale_quantity = request.form["item-quantity"]
         x = (int(sale_quantity))
+
         cur = conn.cursor()
         cur.execute(
             """select stock_quantity from product1 where id=%(pid)s""", {"pid": pid})
