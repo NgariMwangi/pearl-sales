@@ -82,7 +82,7 @@ def sign():
                 
                     else:
                         flash('email already exist')
-                    return redirect("/signup")
+                        return redirect("/signup")
                 
                
         else:
