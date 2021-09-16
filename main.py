@@ -13,8 +13,9 @@ cur = conn.cursor()
 cur.execute("CREATE TABLE IF NOT EXISTS product1 (id serial PRIMARY KEY,name VARCHAR(100),buying_price INT,selling_price INT,stock_quantity INT);")
 cur.execute("CREATE TABLE IF NOT EXISTS sale (id serial PRIMARY KEY,pid INT, quantity INT, created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() );")
 cur.execute("CREATE TABLE IF NOT EXISTS users(id serial PRIMARY KEY,username VARCHAR(100), email VARCHAR(100),password VARCHAR(100),password2 VARCHAR(100) );")
+cur.execute("CREATE TABLE IF NOT EXISTS stocks (id serial PRIMARY KEY,name VARCHAR(100),buying_price INT,selling_price INT,stock_quantity INT);")
+cur.execute("CREATE TABLE IF NOT EXISTS restocking_update (id serial PRIMARY KEY, pid INT,stockchanged INT,changed_sp INT,changed_bp INT,change_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW());")
 conn.commit()
-
 @app.route('/kra',methods=["POST","GET"])
 def netpay():
     z=[]
@@ -198,7 +199,7 @@ def product():
         selling_price = request.form["selling"]
         stock_quantity = request.form["stock"]
         print(product_name)
-        print(buying_price)
+        
         cur.execute("""INSERT INTO product1(name,buying_price,selling_price,stock_quantity) VALUES ( %(n)s,%(bp)s,%(sp)s,%(st)s)""", {
                     "n": product_name, "bp": buying_price, "sp": selling_price, "st": stock_quantity, })
         conn.commit()
@@ -242,6 +243,8 @@ def sale():
         else:
             cur.execute("""update product1 set stock_quantity=%(z)s where id=%(pid)s""", {
                         "pid": pid, "z": z})
+            cur.execute("""update stocks set stock_quantity=%(z)s where id=%(pid)s""", {
+                        "pid": pid, "z": z})
             cur = conn.cursor()
             cur.execute(
                 "INSERT INTO sale (pid,quantity) VALUES (%s,%s)", (pid, sale_quantity))
@@ -258,7 +261,61 @@ def sa():
     lst4 = sale
 
     return render_template('sales.html', lst4=lst4)
+@app.route('/edit',methods=["POST", "GET"])
+def edit():
+    if request.method == "POST":
+    
+        e=request.form["Item-id1"]
+        a = request.form["name1"]
+        b = request.form["buyingprice"]
+        c= request.form["sellingprice"]
+        d = request.form["stockquantity"]
+        cur.execute("""select * from stocks where id=%(e)s""",{"e": e})
+        ch=cur.fetchone()
+        cur.execute("""update product1 set name=%(a)s,buying_price=%(b)s,selling_price=%(c)s,stock_quantity=%(d)s where id=%(e)s""", {
+                        "e": e, "a": a,"b":b,"c":c,"d":d})
+        cur.execute("""update stocks set name=%(a)s,buying_price=%(b)s,selling_price=%(c)s,stock_quantity=%(d)s where id=%(e)s""", {
+                        "e": e, "a": a,"b":b,"c":c,"d":d})
+        
+        b=(int(b))
+        c=(int(c))
+        d=(int(d))
+        bp=b-ch[2]
+        sp=c-ch[3]
+        st=d-ch[4]
+        cur.execute( """INSERT INTO restocking_update (pid,stockchanged,changed_sp,changed_bp) VALUES (%(e)s,%(st)s,%(bp)s,%(sp)s)""", {"e":e,"st":st,"bp":bp,"sp":sp})
 
+        conn.commit()
+        return redirect("/products")
+
+
+
+
+
+
+@app.route('/stock',methods=["POST", "GET"])
+def stock():
+    if request.method == "POST":
+        cur = conn.cursor()
+        product_name = request.form["name"]
+        buying_price = request.form["buying_price"]
+        selling_price = request.form["selling"]
+        stock_quantity = request.form["stock"]
+        print(product_name)
+        
+        cur.execute("""INSERT INTO stocks(name,buying_price,selling_price,stock_quantity) VALUES ( %(n)s,%(bp)s,%(sp)s,%(st)s)""", {
+                    "n": product_name, "bp": buying_price, "sp": selling_price, "st": stock_quantity, })
+        cur.execute("""INSERT INTO product1(name,buying_price,selling_price,stock_quantity) VALUES ( %(n)s,%(bp)s,%(sp)s,%(st)s)""", {
+                    "n": product_name, "bp": buying_price, "sp": selling_price, "st": stock_quantity, })
+        conn.commit()
+        return redirect("/stocks")
+    else:
+        cur = conn.cursor()
+        cur.execute("select * from stocks")
+        record = cur.fetchall()
+        list1 = record
+        record = cur.fetchall()
+        return render_template('stock.html', list1=list1)
 
 if __name__ == "__main__":
     app.run(debug=True)
